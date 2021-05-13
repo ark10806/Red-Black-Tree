@@ -130,11 +130,15 @@ public:
     }
     void Restructure(Node* node){
         Node* grand = node->parent->parent;
+        Node* par = 
+        Node* T1 = grand;
+        Node* T2 = grand;
+        Node* T3 = grand;
+        Node* T4 = grand;
+        while(T1->isFamily()){
+            T1 = T1
+        }
         
-        Node* T1 = uncle;
-        Node* T2 = ;
-        Node* T3 = ;
-        Node* T4 = ;
 
     }
     void Recolor(Node* node, Node* uncle){
