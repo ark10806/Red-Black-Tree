@@ -2,6 +2,12 @@
 #include <queue>
 using namespace std;
 
+/*
+알고리즘 시간복잡도를 보고서에서 다뤄야 한다.
+표지 목차
+주석
+*/
+
 class Patient{
 private:
     unsigned int num;
@@ -48,6 +54,12 @@ void Parser(queue<string> & que, string comm){
     }
     que.push(comm.substr(iter, comm_size));
 }
+
+class RBtree{
+public:
+    Patient pat;
+
+};
 
 int main(){
     queue<string> command_line;
