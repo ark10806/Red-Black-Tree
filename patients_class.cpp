@@ -1,5 +1,7 @@
 #include <iostream>
 #include <queue>
+#define RED true
+#define BLK false
 using namespace std;
 
 /*
@@ -55,10 +57,92 @@ void Parser(queue<string> & que, string comm){
     que.push(comm.substr(iter, comm_size));
 }
 
+class Node{
+public:
+    int key;
+    bool color;
+    Patient* pat;
+    Node* parent; // Parent node pointer.
+    Node* left;
+    Node* right;
+public:
+    Node(Patient& pat, Node* parent=null, Node* left=null, Node* right=null){
+        key = pat->num;
+        color = RED;
+        this->pat = pat;
+        this->parent = parent;
+        this->left = left; // can be just a NULL
+        this->right = right;
+    }
+    void set_parent(Node* parent){
+        this->parent = parent;
+    }
+    Node* get_uncle(){
+        Node* grand = this->parent->parent;
+        if(grand->left == this->parent)
+            return grand->right;
+        else
+            return grand->left;
+    }
+}
+
 class RBtree{
+private:
+    Node* root;
 public:
     Patient pat;
+    void insert(Node* node){
+        Node* par = find_loc(node->get_key);
+        node->parent = par;
+        if(node->key < par->key){
+            par->left = node;
+        }
+        else{
+            par->right = node;
+        }
+    }
+    Node* find_loc(int key){
+        Node* curr = root;
+        Node* prev = null;
+        while(curr != null){
+            prev = curr;
+            if(key < curr->get_key()){
+                curr = curr->left;
+            }
+            else{
+                curr = curr->right;
+            }
+        }
+        return prev;
+    }
+    
+    void doubleRed(Node* node){
+        Node* par = node->par;
+        Node* uncle = node->par->par->;
+        if(par->color == RED){
+            if(par->get_uncle()->color == BLK){
+                Restructure(node);
+            }
+            else{
+                Recolor(node, uncle);
+            }
+        }
+    }
+    void Restructure(Node* node){
+        Node* grand = node->parent->parent;
+        
+        Node* T1 = uncle;
+        Node* T2 = ;
+        Node* T3 = ;
+        Node* T4 = ;
 
+    }
+    void Recolor(Node* node, Node* uncle){
+        node->parent->color = BLK;
+        uncle->color = BLK;
+        uncle->parent->color = RED;
+        doubleRed(uncle->parent);
+    }
 };
 
 int main(){
