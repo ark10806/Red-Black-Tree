@@ -1,5 +1,7 @@
 #include <iostream>
 #include <queue>
+#include <vector>
+#include <algorithm>
 #define RED true
 #define BLK false
 using namespace std;
@@ -37,6 +39,9 @@ public:
         rec.disease = que.front(); que.pop();
         rec.charge = stoi(que.front()); que.pop();
     }
+    int get_num(){
+        return num;
+    }
     void prn(){
         cout << num << ' ' << name << ' ' << tel << '\t';
         cout << addr.x << ", " << addr.y << '\t';
@@ -44,18 +49,6 @@ public:
     }
 
 };
-
-void Parser(queue<string> & que, string comm){
-    int iter=0;
-    int comm_size = comm.size();
-    for(int i=0; i<comm_size; i++){
-        if(comm[i] == ' '){
-            que.push(comm.substr(iter, i-iter));
-            iter = i+1;
-        }
-    }
-    que.push(comm.substr(iter, comm_size));
-}
 
 class Node{
 public:
@@ -66,8 +59,8 @@ public:
     Node* left;
     Node* right;
 public:
-    Node(Patient& pat, Node* parent=null, Node* left=null, Node* right=null){
-        key = pat->num;
+    Node(Patient* pat, Node* parent=NULL, Node* left=NULL, Node* right=NULL){
+        key = pat->get_num();
         color = RED;
         this->pat = pat;
         this->parent = parent;
@@ -84,15 +77,17 @@ public:
         else
             return grand->left;
     }
-}
+};
 
 class RBtree{
 private:
     Node* root;
 public:
-    Patient pat;
+    RBtree(){
+        root = NULL;
+    }
     void insert(Node* node){
-        Node* par = find_loc(node->get_key);
+        Node* par = find_loc(node->key);
         node->parent = par;
         if(node->key < par->key){
             par->left = node;
@@ -100,13 +95,14 @@ public:
         else{
             par->right = node;
         }
+        doubleRed(node);
     }
     Node* find_loc(int key){
         Node* curr = root;
-        Node* prev = null;
-        while(curr != null){
+        Node* prev = NULL;
+        while(curr != NULL){
             prev = curr;
-            if(key < curr->get_key()){
+            if(key < curr->key){
                 curr = curr->left;
             }
             else{
@@ -117,29 +113,55 @@ public:
     }
     
     void doubleRed(Node* node){
-        Node* par = node->par;
-        Node* uncle = node->par->par->;
+        Node* par = node->parent;
+        Node* uncle = node->parent->get_uncle();
         if(par->color == RED){
-            if(par->get_uncle()->color == BLK){
+            if(uncle->color == BLK){
+                cout << "start Restructuring" << endl;
                 Restructure(node);
             }
             else{
+                cout << "start Recoloring" << endl;
                 Recolor(node, uncle);
             }
         }
     }
+    void getTwigs(Node* node, vector<int> family_keys, vector<Node*>& subtrees, vector<Node*>& postordered_family){
+        getTwigs(node->left, family_keys, subtrees, postordered_family);
+        if(find(family_keys.begin(), family_keys.end(), node->parent->key) == family_keys.end()){
+            // inserts subtree to stl::vector subtrees in sequential if current node's parent is in (me, parent, grand)
+            subtrees.push_back(node);
+            postordered_family.push_back(node->parent);
+        }
+        getTwigs(node->right, family_keys, subtrees, postordered_family);
+    }
     void Restructure(Node* node){
         Node* grand = node->parent->parent;
-        Node* par = 
-        Node* T1 = grand;
-        Node* T2 = grand;
-        Node* T3 = grand;
-        Node* T4 = grand;
-        while(T1->isFamily()){
-            T1 = T1
-        }
-        
+        Node* par = node->parent;
+        vector<int> family_keys;
+        family_keys.push_back(grand->key);
+        family_keys.push_back(par->key);
+        family_keys.push_back(node->key);
 
+        vector<Node*> subtrees;
+        vector<Node*> postordered_family;
+        getTwigs(grand, family_keys, subtrees, postordered_family);
+        Node* T1 = subtrees[0];
+        Node* T2 = subtrees[1];
+        Node* T3 = subtrees[2];
+        Node* T4 = subtrees[3];
+
+        postordered_family[0]->parent = postordered_family[1];
+        postordered_family[0]->left = T1;
+        postordered_family[0]->right = T2;
+
+        postordered_family[1]->parent = grand->parent;
+        postordered_family[1]->left = postordered_family[0];
+        postordered_family[1]->right = postordered_family[2];
+
+        postordered_family[2]->parent = postordered_family[1];
+        postordered_family[2]->left = T3;
+        postordered_family[2]->right = T4;
     }
     void Recolor(Node* node, Node* uncle){
         node->parent->color = BLK;
@@ -149,14 +171,31 @@ public:
     }
 };
 
+void Parser(queue<string> & que, string comm){
+    int iter=0;
+    int comm_size = comm.size();
+    for(int i=0; i<comm_size; i++){
+        if(comm[i] == ' '){
+            que.push(comm.substr(iter, i-iter));
+            iter = i+1;
+        }
+    }
+    que.push(comm.substr(iter, comm_size));
+}
+
 int main(){
+    RBtree rbtree;
     queue<string> command_line;
     string command;
-    getline(cin, command);
-    Parser(command_line, command);
+    while(true){
+        getline(cin, command);
+        Parser(command_line, command);
 
-    Patient pat(command_line);
-    pat.prn();
+        Patient pat(command_line);
+        pat.prn();
+        Node node(&pat);
+        rbtree.insert(&node);
+    }
 
     return 0;
 }
