@@ -43,9 +43,9 @@ public:
         return num;
     }
     void prn(){
-        cout << '\t' << num << ' ' << name << ' ' << tel << '\t';
-        cout << addr.x << ", " << addr.y << '\t';
-        cout << rec.disease << ' ' << rec.charge << endl;
+        cout << '\t' << num << ' ' << name << ' ' << tel << '\t' <<endl;
+        // cout << addr.x << ", " << addr.y << '\t';
+        // cout << rec.disease << ' ' << rec.charge << endl;
     }
 
 };
@@ -68,7 +68,6 @@ public:
         this->right = right;
     }
     Node* get_uncle(){
-        cout << "start get_uncle()" << endl;
         cout << "me:\t" << this->key << endl;
         cout << "par:\t" << this->parent->key << endl;
         Node* grand = this->parent->parent;
@@ -95,7 +94,6 @@ public:
         if(root == NULL){
             root = node;
             root->color = BLK;
-            cout << "set root color BLK" << endl;
         }
         else{
             if(node->key < par->key){
@@ -107,6 +105,17 @@ public:
             node->parent = par;
             doubleRed(node);
         }
+        prn(root);
+    }
+    void prn(Node* node){
+        if(node == NULL) return;
+        prn(node->left);
+        cout << node->key << ' ' ;
+        if(node->color == RED)
+            cout << "RED" << endl;
+        else
+            cout << "BLK" << endl;
+        prn(node->right);
     }
     Node* find_loc(int key){
         Node* curr = root;
@@ -120,87 +129,104 @@ public:
                 curr = curr->right;
             }
         }
-        if(prev!=NULL)
-            cout << "your parent is " << prev->key << endl;
         return prev;
     }
     
     void doubleRed(Node* node){
         Node* par = node->parent;
+        if(par==NULL) return;
         Node* uncle = node->get_uncle();
-        cout << "end get_uncle()" << endl;
         if(par->color == RED){
-            cout << "par color is RED!" << endl;
             if(uncle == NULL){
-                cout << "start Restructuring" << endl;
+                cout << "##start Restructuring" << endl;
                 Restructure(node);
             }
             else if(uncle->color == BLK){
-                cout << "start Restructuring" << endl;
+                cout << "##start Restructuring" << endl;
                 Restructure(node);
             }
             else{
-                cout << "start Recoloring" << endl;
+                cout << "##start Recoloring" << endl;
                 Recolor(node, uncle);
             }
         }
     }
     void getTwigs(Node* node, vector<int> family_keys, vector<Node*>& subtrees, vector<Node*>& postordered_family){
-        cout << "Twigs run " << endl;
         if(node==NULL) return;
         getTwigs(node->left, family_keys, subtrees, postordered_family);
-        if(find(family_keys.begin(), family_keys.end(), node->parent->key) == family_keys.end()){
-            // inserts subtree to stl::vector subtrees in sequential if current node's parent is in (me, parent, grand)
-            cout << node->key << " inserted" << endl;
-            subtrees.push_back(node);
-            postordered_family.push_back(node->parent);
+        if(find(family_keys.begin(), family_keys.end(), node->key) != family_keys.end()){
+            postordered_family.push_back(node);
+
+            if(node->left == NULL)  subtrees.push_back(NULL);
+            else if(find(family_keys.begin(), family_keys.end(), node->left->key) == family_keys.end()){
+                subtrees.push_back(node->left);
+            }
+            if(node->right == NULL)  subtrees.push_back(NULL);
+            else if(find(family_keys.begin(), family_keys.end(), node->right->key) == family_keys.end()){
+                subtrees.push_back(node->right);
+            }
         }
+        
         getTwigs(node->right, family_keys, subtrees, postordered_family);
     }
     void Restructure(Node* node){
-        cout << "start_restructuring!" << endl;
-        Node* grand = node->parent->parent;
-        cout << "got grand" << endl;
         Node* par = node->parent;
+        Node* grand = par->parent;
+        Node* head = grand->parent;
+
         vector<int> family_keys;
         family_keys.push_back(grand->key);
         family_keys.push_back(par->key);
         family_keys.push_back(node->key);
-        cout << "got family key" << endl;
-        cout << family_keys[0] << ' ' << family_keys[1] << ' ' << family_keys[2] << endl;
-        bool hi = find(family_keys.begin(), family_keys.end(), 1) != family_keys.end();
-        cout << "hi" << (int)hi << endl;
 
         vector<Node*> subtrees;
         vector<Node*> postordered_family;   // me, par, grand in increasing order.
-        cout << "start postorder traversal" << endl;
-        getTwigs(par, family_keys, subtrees, postordered_family);
+        getTwigs(grand, family_keys, subtrees, postordered_family);
         cout << "subTree number:\t" << subtrees.size() << endl;
-        cout << "postorder number:\t" << postordered_family.size() << endl;
-        cout << "postordered_family: " << postordered_family[0]->key << '\t';
-        cout << postordered_family[1]->key << '\t' << postordered_family[2]->key << endl;
-        cout << "end postorder trav" << endl << endl;
+        // cout << "postordered family:\t" << postordered_family.size() << endl;
+        // cout << "postordered_family[0].key: " << postordered_family[0]->key << '\t';
         Node* T1 = subtrees[0];
         Node* T2 = subtrees[1];
         Node* T3 = subtrees[2];
         Node* T4 = subtrees[3];
+        cout << "Ts: " << T1 << ' ' << T2 << ' ' << T3 << ' ' << T4 << endl;
+        // cout << "Ts: " << T1->key << ' ' << T2->key << ' ' << T3->key << ' ' << T4->key << endl;
 
+
+        cout << postordered_family[0]->key << ' ' << postordered_family[1]->key << ' ' << postordered_family[2]->key << endl;
+        
         postordered_family[0]->parent = postordered_family[1];
         postordered_family[0]->left = T1;
         postordered_family[0]->right = T2;
+        postordered_family[0]->color = RED;
 
-        postordered_family[1]->parent = grand->parent;
+        
+
+        if(head == NULL)
+            root = postordered_family[1];
+        else{
+            if(head->left == grand){ head->left =  postordered_family[1]; }
+            if(head->right == grand){ head->right =  postordered_family[1]; }
+        }
+        postordered_family[1]->parent = head;
+        // cout << "head: " << postordered_family[1]->parent->key << endl;
         postordered_family[1]->left = postordered_family[0];
         postordered_family[1]->right = postordered_family[2];
+        postordered_family[1]->color = BLK;
+        cout << "sibal" << postordered_family[1]->left->key << endl;
 
         postordered_family[2]->parent = postordered_family[1];
         postordered_family[2]->left = T3;
         postordered_family[2]->right = T4;
+        postordered_family[2]->color = RED;
     }
     void Recolor(Node* node, Node* uncle){
         node->parent->color = BLK;
         uncle->color = BLK;
-        uncle->parent->color = RED;
+
+        Node* grand = node->parent->parent;
+        if(grand == root){ grand->color = BLK; }
+        else{ grand->color = RED; }
         doubleRed(uncle->parent);
     }
 };
@@ -221,29 +247,41 @@ int main(){
     RBtree rbtree;
     string command;
     vector<string> test;
-    command = "1005691 Mary 01012345678 1123 90 Pneumonia 50000";
+    // command = "1005691 Mary 01012345678 1123 90 Pneumonia 50000"; 1
+    // test.push_back(command);
+    // command = "1024129 Dorothy 01014832345 3453 6660 Diabetes 10000"; 6
+    // test.push_back(command);
+    // command = "1009711 Frank 01090123141 5453 5678 Fracture 10000"; 3
+    // test.push_back(command);
+    // command = "1008353 Athur 01065461752 23 2365 Measles 10000"; 2
+    // test.push_back(command);
+    // command = "1012317 Anna 01048713158 111 2234 Flu 100000"; 4
+    // test.push_back(command);
+    // command = "1014748 Edward 01097123455 3245 1234 Bruise 10000"; 5
+    command = "1 Mary 01012345678 1123 90 Pneumonia 50000";
     test.push_back(command);
-    command = "1024129 Dorothy 01014832345 3453 6660 Diabetes 10000";
+    command = "6 Dorothy 01014832345 3453 6660 Diabetes 10000";
     test.push_back(command);
-    command = "1009711 Frank 01090123141 5453 5678 Fracture 10000";
+    command = "3 Frank 01090123141 5453 5678 Fracture 10000";
     test.push_back(command);
-    command = "1008353 Athur 01065461752 23 2365 Measles 10000";
+    command = "2 Athur 01065461752 23 2365 Measles 10000";
     test.push_back(command);
-    command = "1012317 Anna 01048713158 111 2234 Flu 100000";
+    command = "4 Anna 01048713158 111 2234 Flu 100000";
     test.push_back(command);
-    command = "1014748 Edward 01097123455 3245 1234 Bruise 10000";
+    command = "5 Edward 01097123455 3245 1234 Bruise 10000";
     test.push_back(command);
     int i =0;
     while(true){
         queue<string> command_line;
         command = "";
+        if(i==6) break;
         getline(cin, command);
         command = test[i];
         Parser(command_line, command);
 
         // Patient* pat(command_line);
         Patient* pat = new Patient(command_line);
-        cout << "pat->prn(): ";
+        cout << i+1 << ' ' << "pat->prn(): ";
         pat->prn();
         // Node* node(pat);
         rbtree.insert(new Node(pat));
