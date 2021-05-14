@@ -69,7 +69,10 @@ public:
     }
     Node* get_uncle(){
         cout << "start get_uncle()" << endl;
+        cout << "me:\t" << this->key << endl;
+        cout << "par:\t" << this->parent->key << endl;
         Node* grand = this->parent->parent;
+
         if(grand != NULL){
             if(grand->left == this->parent)
                 return grand->right;
@@ -89,7 +92,6 @@ public:
     }
     void insert(Node* node){
         Node* par = find_loc(node->key);
-        node->parent = par;
         if(root == NULL){
             root = node;
             root->color = BLK;
@@ -102,6 +104,7 @@ public:
             else{
                 par->right = node;
             }
+            node->parent = par;
             doubleRed(node);
         }
     }
@@ -109,7 +112,6 @@ public:
         Node* curr = root;
         Node* prev = NULL;
         while(curr != NULL){
-            cout << "find_loc - root key is: " << curr->key << endl;
             prev = curr;
             if(key < curr->key){
                 curr = curr->left;
@@ -125,7 +127,7 @@ public:
     
     void doubleRed(Node* node){
         Node* par = node->parent;
-        Node* uncle = node->parent->get_uncle();
+        Node* uncle = node->get_uncle();
         cout << "end get_uncle()" << endl;
         if(par->color == RED){
             cout << "par color is RED!" << endl;
@@ -144,25 +146,40 @@ public:
         }
     }
     void getTwigs(Node* node, vector<int> family_keys, vector<Node*>& subtrees, vector<Node*>& postordered_family){
+        cout << "Twigs run " << endl;
+        if(node==NULL) return;
         getTwigs(node->left, family_keys, subtrees, postordered_family);
         if(find(family_keys.begin(), family_keys.end(), node->parent->key) == family_keys.end()){
             // inserts subtree to stl::vector subtrees in sequential if current node's parent is in (me, parent, grand)
+            cout << node->key << " inserted" << endl;
             subtrees.push_back(node);
             postordered_family.push_back(node->parent);
         }
         getTwigs(node->right, family_keys, subtrees, postordered_family);
     }
     void Restructure(Node* node){
+        cout << "start_restructuring!" << endl;
         Node* grand = node->parent->parent;
+        cout << "got grand" << endl;
         Node* par = node->parent;
         vector<int> family_keys;
         family_keys.push_back(grand->key);
         family_keys.push_back(par->key);
         family_keys.push_back(node->key);
+        cout << "got family key" << endl;
+        cout << family_keys[0] << ' ' << family_keys[1] << ' ' << family_keys[2] << endl;
+        bool hi = find(family_keys.begin(), family_keys.end(), 1) != family_keys.end();
+        cout << "hi" << (int)hi << endl;
 
         vector<Node*> subtrees;
-        vector<Node*> postordered_family;
-        getTwigs(grand, family_keys, subtrees, postordered_family);
+        vector<Node*> postordered_family;   // me, par, grand in increasing order.
+        cout << "start postorder traversal" << endl;
+        getTwigs(par, family_keys, subtrees, postordered_family);
+        cout << "subTree number:\t" << subtrees.size() << endl;
+        cout << "postorder number:\t" << postordered_family.size() << endl;
+        cout << "postordered_family: " << postordered_family[0]->key << '\t';
+        cout << postordered_family[1]->key << '\t' << postordered_family[2]->key << endl;
+        cout << "end postorder trav" << endl << endl;
         Node* T1 = subtrees[0];
         Node* T2 = subtrees[1];
         Node* T3 = subtrees[2];
