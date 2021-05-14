@@ -43,7 +43,7 @@ public:
         return num;
     }
     void prn(){
-        cout << num << ' ' << name << ' ' << tel << '\t';
+        cout << '\t' << num << ' ' << name << ' ' << tel << '\t';
         cout << addr.x << ", " << addr.y << '\t';
         cout << rec.disease << ' ' << rec.charge << endl;
     }
@@ -67,15 +67,16 @@ public:
         this->left = left; // can be just a NULL
         this->right = right;
     }
-    void set_parent(Node* parent){
-        this->parent = parent;
-    }
     Node* get_uncle(){
+        cout << "start get_uncle()" << endl;
         Node* grand = this->parent->parent;
-        if(grand->left == this->parent)
-            return grand->right;
-        else
-            return grand->left;
+        if(grand != NULL){
+            if(grand->left == this->parent)
+                return grand->right;
+            else
+                return grand->left;
+        }
+        return NULL;
     }
 };
 
@@ -89,18 +90,26 @@ public:
     void insert(Node* node){
         Node* par = find_loc(node->key);
         node->parent = par;
-        if(node->key < par->key){
-            par->left = node;
+        if(root == NULL){
+            root = node;
+            root->color = BLK;
+            cout << "set root color BLK" << endl;
         }
         else{
-            par->right = node;
+            if(node->key < par->key){
+                par->left = node;
+            }
+            else{
+                par->right = node;
+            }
+            doubleRed(node);
         }
-        doubleRed(node);
     }
     Node* find_loc(int key){
         Node* curr = root;
         Node* prev = NULL;
         while(curr != NULL){
+            cout << "find_loc - root key is: " << curr->key << endl;
             prev = curr;
             if(key < curr->key){
                 curr = curr->left;
@@ -109,14 +118,22 @@ public:
                 curr = curr->right;
             }
         }
+        if(prev!=NULL)
+            cout << "your parent is " << prev->key << endl;
         return prev;
     }
     
     void doubleRed(Node* node){
         Node* par = node->parent;
         Node* uncle = node->parent->get_uncle();
+        cout << "end get_uncle()" << endl;
         if(par->color == RED){
-            if(uncle->color == BLK){
+            cout << "par color is RED!" << endl;
+            if(uncle == NULL){
+                cout << "start Restructuring" << endl;
+                Restructure(node);
+            }
+            else if(uncle->color == BLK){
                 cout << "start Restructuring" << endl;
                 Restructure(node);
             }
@@ -185,16 +202,36 @@ void Parser(queue<string> & que, string comm){
 
 int main(){
     RBtree rbtree;
-    queue<string> command_line;
     string command;
+    vector<string> test;
+    command = "1005691 Mary 01012345678 1123 90 Pneumonia 50000";
+    test.push_back(command);
+    command = "1024129 Dorothy 01014832345 3453 6660 Diabetes 10000";
+    test.push_back(command);
+    command = "1009711 Frank 01090123141 5453 5678 Fracture 10000";
+    test.push_back(command);
+    command = "1008353 Athur 01065461752 23 2365 Measles 10000";
+    test.push_back(command);
+    command = "1012317 Anna 01048713158 111 2234 Flu 100000";
+    test.push_back(command);
+    command = "1014748 Edward 01097123455 3245 1234 Bruise 10000";
+    test.push_back(command);
+    int i =0;
     while(true){
+        queue<string> command_line;
+        command = "";
         getline(cin, command);
+        command = test[i];
         Parser(command_line, command);
 
-        Patient pat(command_line);
-        pat.prn();
-        Node node(&pat);
-        rbtree.insert(&node);
+        // Patient* pat(command_line);
+        Patient* pat = new Patient(command_line);
+        cout << "pat->prn(): ";
+        pat->prn();
+        // Node* node(pat);
+        rbtree.insert(new Node(pat));
+        cout << endl;
+        i++;
     }
 
     return 0;
