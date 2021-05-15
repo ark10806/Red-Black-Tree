@@ -47,8 +47,8 @@ private:
         string disease;
         unsigned int charge;
     };
+    vector<Record*> Record_vec;
     Address addr;
-    Record rec;
 public:
     Patient(queue<string> que){
         num = stoi(que.front()); que.pop();
@@ -58,16 +58,20 @@ public:
         addr.x = stoi(que.front()); que.pop();
         addr.y = stoi(que.front()); que.pop();
         
-        rec.disease = que.front(); que.pop();
-        rec.charge = stoi(que.front()); que.pop();
-    }
-    int get_num(){
-        return num;
+        Record* rec = new Record;
+        rec->disease = que.front(); que.pop();
+        rec->charge = stoi(que.front()); que.pop();
+        Record_vec.push_back(rec);
     }
     void prn(){
         cout << name << ' ' << tel << ' ' << addr.x << ' ' << addr.y << endl;
     }
-
+    void append_record(string disease, unsigned int charge){
+        Record* rec = new Record;
+        rec->disease = disease;
+        rec->charge = charge;
+        Record_vec.push_back(rec);
+    }
 };
 
 class Node{
@@ -80,7 +84,7 @@ public:
     Node* right;
 public:
     Node(Patient* pat, Node* parent=NULL, Node* left=NULL, Node* right=NULL){
-        key = pat->get_num();
+        key = pat->num;
         color = RED;
         this->pat = pat;
         this->parent = parent;
