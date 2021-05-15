@@ -168,19 +168,19 @@ public:
             }
         }
     }
-    void getTwigs(Node* node, vector<int> family_keys, vector<Node*>& subtrees, vector<Node*>& preordered_family){
+    void getTwigs(Node* node, vector<int> family_keys, queue<Node*>& subtrees, vector<Node*>& preordered_family){
         if(node==NULL) return;
         getTwigs(node->left, family_keys, subtrees, preordered_family);
         if(find(family_keys.begin(), family_keys.end(), node->key) != family_keys.end()){
             preordered_family.push_back(node);
 
-            if(node->left == NULL)  subtrees.push_back(NULL);
+            if(node->left == NULL)  subtrees.push(NULL);
             else if(find(family_keys.begin(), family_keys.end(), node->left->key) == family_keys.end()){
-                subtrees.push_back(node->left);
+                subtrees.push(node->left);
             }
-            if(node->right == NULL)  subtrees.push_back(NULL);
+            if(node->right == NULL)  subtrees.push(NULL);
             else if(find(family_keys.begin(), family_keys.end(), node->right->key) == family_keys.end()){
-                subtrees.push_back(node->right);
+                subtrees.push(node->right);
             }
         }
         
@@ -196,13 +196,13 @@ public:
         family_keys.push_back(par->key);
         family_keys.push_back(node->key);
 
-        vector<Node*> subtrees;
+        queue<Node*> subtrees;
         vector<Node*> preordered_family;   // me, par, grand in increasing order.
         getTwigs(grand, family_keys, subtrees, preordered_family);
-        Node* T1 = subtrees[0];
-        Node* T2 = subtrees[1];
-        Node* T3 = subtrees[2];
-        Node* T4 = subtrees[3];
+        Node* T1 = subtrees.front(); subtrees.pop();
+        Node* T2 = subtrees.front(); subtrees.pop();
+        Node* T3 = subtrees.front(); subtrees.pop();
+        Node* T4 = subtrees.front();
         
         preordered_family[0]->parent = preordered_family[1];
         preordered_family[0]->left = T1;
