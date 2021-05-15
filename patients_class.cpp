@@ -192,9 +192,10 @@ public:
         Node* head = grand->parent;
 
         vector<int> family_keys;
-        family_keys.push_back(grand->key);
-        family_keys.push_back(par->key);
-        family_keys.push_back(node->key);
+        int family_keys[3];
+        family_keys[grand->key];
+        family_keys[par->key];
+        family_keys[node->key];
 
         queue<Node*> subtrees;
         vector<Node*> preordered_family;   // me, par, grand in increasing order.
