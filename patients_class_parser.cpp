@@ -22,17 +22,16 @@ private:
     stack<Record*> Record_stk;
     Address addr;
 public:
-    Patient(queue<string> que){
-        num = stoi(que.front()); que.pop();
-        name = que.front(); que.pop();
-        tel = que.front(); que.pop();
-        
-        addr.x = stoi(que.front()); que.pop();
-        addr.y = stoi(que.front()); que.pop();
+    Patient(int num, string name, string tel, int x, int y, string disease_name, int charge){
+        this->num = num;
+        this->name = name;
+        this->tel = tel;
+        addr.x = x;
+        addr.y = y;
         
         Record* rec = new Record;
-        rec->disease = que.front(); que.pop();
-        rec->charge = stoi(que.front()); que.pop();
+        rec->disease = disease_name;
+        rec->charge = charge;
         Record_stk.push(rec);
     }
     int get_num(){
@@ -44,10 +43,10 @@ public:
     void prn(){
         cout << name << ' ' << tel << ' ' << addr.x << ' ' << addr.y << endl;
     }
-    void append_record(queue<string> que){
+    void append_record(string disease_name, int charge){
         Record* rec = new Record;
-        rec->disease = que.front(); que.pop();
-        rec->charge = stoi(que.front()); que.pop();
+        rec->disease = disease_name;
+        rec->charge = charge;
         Record_stk.push(rec);
     }
 };
@@ -192,6 +191,7 @@ public:
         queue<Node*> subtrees;
         queue<Node*> family;
         if(a < b){
+            
             family.push(grand);
             if(b<c){
                 family.push(par); family.push(node);
@@ -252,23 +252,11 @@ public:
     }
 };
 
-void Parser(queue<string> & que, string comm){
-    int iter=0;
-    int comm_size = comm.size();
-    for(int i=0; i<comm_size; i++){
-        if(comm[i] == ' '){
-            que.push(comm.substr(iter, i-iter));
-            iter = i+1;
-        }
-    }
-    que.push(comm.substr(iter, comm_size));
-}
-
 int main(){
     RBtree rbtree;
     string command;
 
-    int num_pat;
+    int num;
     string name;
     string tel;
     int x;
@@ -278,21 +266,18 @@ int main(){
 
     int loop;
     cin >> loop;
-    cin.ignore();
     for(int i=0; i<loop; i++){
-        queue<string> command_line;
-        string command;
-        getline(cin, command);
-        Parser(command_line, command);
-    
-        string option = command_line.front(); command_line.pop();
+        string option;
+        cin >> option;
+        cout << "\t\t\t";
         if(option == "I"){
-            rbtree.insert(new Node(new Patient(command_line)));
+            cin >> num >> name >> tel>> x >> y >> disease_name >> charge;
+            rbtree.insert(new Node(new Patient(num, name, tel, x, y, disease_name, charge)));
         }
         else if(option=="F"){
-            int key = stoi(command_line.front());
-            Node* finded = rbtree.find_loc(key);
-            if(finded->key == key){
+            cin >> num;
+            Node* finded = rbtree.find_loc(num);
+            if(finded->key == num){
                 cout << rbtree.get_depth(finded) << ' ';
                 finded->pat->prn();
             }
@@ -301,17 +286,17 @@ int main(){
             
         }
         else if (option == "A"){
-            int key = stoi(command_line.front()); command_line.pop();
-            Node* finded = rbtree.find_loc(key);
-            if(finded->key == key){
+            cin >> num >> disease_name >> charge;
+            Node* finded = rbtree.find_loc(num);
+            if(finded->key == num){
                 cout << rbtree.get_depth(finded) << ' ';
-                finded->pat->append_record(command_line);
+                finded->pat->append_record(disease_name, charge);
             }
             else
                 cout << "Not found" << endl;
         }
         else if (option == "E"){
-            string disease_name = command_line.front();
+            cin >> disease_name;
             cout << rbtree.search_disease(disease_name) << endl;
         }
         else{
