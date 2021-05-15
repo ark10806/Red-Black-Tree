@@ -65,9 +65,7 @@ public:
         return num;
     }
     void prn(){
-        cout << '\t' << num << ' ' << name << ' ' << tel << '\t' <<endl;
-        // cout << addr.x << ", " << addr.y << '\t';
-        // cout << rec.disease << ' ' << rec.charge << endl;
+        cout << name << ' ' << tel << ' ' << addr.x << ' ' << addr.y << endl;
     }
 
 };
@@ -302,6 +300,11 @@ int main(){
     test.push_back(command);
     command = "I 1028522 Henry 01015648964 4346 6567 Fracture 10000";
     test.push_back(command);
+    command = "F 1005691";
+    test.push_back(command);
+    command = "F 1003200";
+    test.push_back(command);
+
     command = "I 1014748 Susan 01093223455 322 124 Fracture 10000";
     test.push_back(command);
     int i =0;
@@ -320,18 +323,26 @@ int main(){
             cout << "comm_line.front():" << command_line.front() << endl;
             rbtree.insert(new Node(new Patient(command_line)));
         }
-        // else if(option=="F"){
-        
-        // }
-        // else if (option == "A"){
+        else if(option=="F"){
+            int key = stoi(command_line.front());
+            Node* finded = rbtree.find_loc(key);
+            if(finded->key == key){
+                cout << rbtree.get_depth(finded) << ' ';
+                finded->pat->prn();
+            }
+            else
+                cout << "Not found" << endl;
+            
+        }
+        else if (option == "A"){
 
-        // }
-        // else if (option == "E"){
+        }
+        else if (option == "E"){
 
-        // }
-        // else{
-        //     cout << "Wrong option." << endl;
-        // }
+        }
+        else{
+            cout << "Wrong option." << endl;
+        }
 
         // Patient* pat(command_line);
         // Patient* pat = new Patient(command_line);
