@@ -63,13 +63,16 @@ public:
         rec->charge = stoi(que.front()); que.pop();
         Record_vec.push_back(rec);
     }
+    int get_num(){
+        return num;
+    }
     void prn(){
         cout << name << ' ' << tel << ' ' << addr.x << ' ' << addr.y << endl;
     }
-    void append_record(string disease, unsigned int charge){
+    void append_record(queue<string> que){ //Queue로 해야하나????
         Record* rec = new Record;
-        rec->disease = disease;
-        rec->charge = charge;
+        rec->disease = que.front(); que.pop();
+        rec->charge = stoi(que.front()); que.pop();
         Record_vec.push_back(rec);
     }
 };
@@ -84,7 +87,7 @@ public:
     Node* right;
 public:
     Node(Patient* pat, Node* parent=NULL, Node* left=NULL, Node* right=NULL){
-        key = pat->num;
+        key = pat->get_num();
         color = RED;
         this->pat = pat;
         this->parent = parent;
@@ -311,6 +314,11 @@ int main(){
 
     command = "I 1014748 Susan 01093223455 322 124 Fracture 10000";
     test.push_back(command);
+
+    command = "A 100 Pneumonia 30000";
+    test.push_back(command);
+    command = "A 1011062 Pneumonia 30000";
+    test.push_back(command);
     int i =0;
     while(true){
         queue<string> command_line;
@@ -339,7 +347,14 @@ int main(){
             
         }
         else if (option == "A"){
-
+            int key = stoi(command_line.front()); command_line.pop();
+            Node* finded = rbtree.find_loc(key);
+            if(finded->key == key){
+                cout << rbtree.get_depth(finded) << ' ';
+                finded->pat->append_record(command_line);
+            }
+            else
+                cout << "Not found" << endl;
         }
         else if (option == "E"){
 
