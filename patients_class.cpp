@@ -1,42 +1,15 @@
 #include <iostream>
 #include <queue>
 #include <vector>
+#include <stack>
 #include <algorithm>
 #define RED true
 #define BLK false
 using namespace std;
 
-/*
-알고리즘 시간복잡도를 보고서에서 다뤄야 한다.
-표지 목차
-주석
-*/
-
-/*
-To-do
-1. 신규가입 I
-    -깊이와 거절/승인을 출력
-    -입력하려는 환자 정보가 이미 존재한다면 그 노드의 깊이를 출력만 한다. 신규가입 거절
-
-2. 환자검색 F
-    -환자번호로 탐색. [깊이, 이름, 연락처, x,y]를 출력
-    -없다면 Not found를 출력
-
-3. 추가진료 A
-    -환자 번호로 찾고 지료정보 추가
-    -[병명, 진료비]
-    ->진료기록 갱신시 깊이 출력
-    ->없으면 Not found를 출력
-
-4. 유행병 조사 E
-    -해당 병명을 집계.
-    -[E, 병명]
-    ->주어진 병명과 같은 환자의 수.
-*/
-
 class Patient{
 private:
-    unsigned int num;
+    int num;
     string name;
     string tel;
     struct Address{
@@ -45,9 +18,9 @@ private:
     };
     struct Record{
         string disease;
-        unsigned int charge;
+        int charge;
     };
-    vector<Record*> Record_vec;
+    stack<Record*> Record_stk;
     Address addr;
 public:
     Patient(queue<string> que){
@@ -61,19 +34,22 @@ public:
         Record* rec = new Record;
         rec->disease = que.front(); que.pop();
         rec->charge = stoi(que.front()); que.pop();
-        Record_vec.push_back(rec);
+        Record_stk.push(rec);
     }
     int get_num(){
         return num;
     }
+    stack<Record*>* get_Record(){
+        return &Record_stk;
+    }
     void prn(){
         cout << name << ' ' << tel << ' ' << addr.x << ' ' << addr.y << endl;
     }
-    void append_record(queue<string> que){ //Queue로 해야하나????
+    void append_record(queue<string> que){
         Record* rec = new Record;
         rec->disease = que.front(); que.pop();
         rec->charge = stoi(que.front()); que.pop();
-        Record_vec.push_back(rec);
+        Record_stk.push(rec);
     }
 };
 
@@ -95,8 +71,6 @@ public:
         this->right = right;
     }
     Node* get_uncle(){
-        cout << "me:\t" << this->key << endl;
-        cout << "par:\t" << this->parent->key << endl;
         Node* grand = this->parent->parent;
 
         if(grand != NULL){
@@ -131,14 +105,13 @@ public:
                 par->right = node;
             }
             else{ // If the key already exists, then returns a Node which has the same key.
-                cout << '<' << get_depth(par) << ' ' << 0 << '>' << endl;
+                cout << get_depth(par) << ' ' << 0 << endl;
                 return;
             }
             node->parent = par;
             doubleRed(node);
         }
-        // prn(root);
-        cout << '<' << get_depth(new_node) << ' ' << 1 << '>' << endl;
+        cout << get_depth(new_node) << ' ' << 1 << endl;
     }
     int get_depth(Node* node){
         int depth = 0;
@@ -147,16 +120,6 @@ public:
             depth++;
         }
         return depth;
-    }
-    void prn(Node* node){
-        if(node == NULL) return;
-        prn(node->left);
-        cout << node->key << ' ' ;
-        if(node->color == RED)
-            cout << "RED" << endl;
-        else
-            cout << "BLK" << endl;
-        prn(node->right);
     }
     Node* find_loc(int key){
         Node* curr = root;
@@ -175,6 +138,19 @@ public:
         }
         return prev;
     }
+    void preorder_traversal(Node* node, string disease_name, int& num_disease){
+        if(node==NULL) return;
+        preorder_traversal(node->left, disease_name, num_disease);
+        if(node->pat->get_Record()->top()->disease == disease_name)
+            num_disease++;
+        preorder_traversal(node->right, disease_name, num_disease);
+        
+    }
+    int search_disease(string disease_name){
+        int num_disease = 0;
+        preorder_traversal(root, disease_name, num_disease);
+        return num_disease;
+    }
     
     void doubleRed(Node* node){
         Node* par = node->parent;
@@ -182,15 +158,12 @@ public:
         Node* uncle = node->get_uncle();
         if(par->color == RED){
             if(uncle == NULL){
-                cout << "##start Restructuring" << endl;
                 Restructure(node);
             }
             else if(uncle->color == BLK){
-                cout << "##start Restructuring" << endl;
                 Restructure(node);
             }
             else{
-                cout << "##start Recoloring" << endl;
                 Recolor(node, uncle);
             }
         }
@@ -226,17 +199,10 @@ public:
         vector<Node*> subtrees;
         vector<Node*> preordered_family;   // me, par, grand in increasing order.
         getTwigs(grand, family_keys, subtrees, preordered_family);
-        cout << "subTree number:\t" << subtrees.size() << endl;
-        // cout << "preordered_family:\t" << preordered_family.size() << endl;
-        // cout << "preordered_family[0].key: " << preordered_family[0]->key << '\t';
         Node* T1 = subtrees[0];
         Node* T2 = subtrees[1];
         Node* T3 = subtrees[2];
         Node* T4 = subtrees[3];
-        cout << "Ts: " << T1 << ' ' << T2 << ' ' << T3 << ' ' << T4 << endl;
-
-
-        cout << preordered_family[0]->key << ' ' << preordered_family[1]->key << ' ' << preordered_family[2]->key << endl;
         
         preordered_family[0]->parent = preordered_family[1];
         preordered_family[0]->left = T1;
@@ -252,7 +218,6 @@ public:
             if(head->right == grand){ head->right =  preordered_family[1]; }
         }
         preordered_family[1]->parent = head;
-        // cout << "head: " << preordered_family[1]->parent->key << endl;
         preordered_family[1]->left = preordered_family[0];
         preordered_family[1]->right = preordered_family[2];
         preordered_family[1]->color = BLK;
@@ -288,51 +253,14 @@ void Parser(queue<string> & que, string comm){
 int main(){
     RBtree rbtree;
     string command;
-    vector<string> test;
-
-    command = "I 1005691 Mary 01012345678 1123 90 Pneumonia 50000";
-    test.push_back(command);
-    command = "I 1024129 Dorothy 01014832345 3453 6660 Diabetes 10000";
-    test.push_back(command);
-    command = "I 1009711 Frank 01090123141 5453 5678 Fracture 10000";
-    test.push_back(command);
-    command = "I 1008353 Athur 01065461752 23 2365 Measles 10000";
-    test.push_back(command);
-    command = "I 1012317 Anna 01048713158 111 2234 Flu 100000";
-    test.push_back(command);
-    command = "I 1014748 Edward 01097123455 3245 1234 Bruise 10000";
-    test.push_back(command);
-
-    command = "I 1011062 Nancy 01078954184 766 445 Fracture 10000";
-    test.push_back(command);
-    command = "I 1028522 Henry 01015648964 4346 6567 Fracture 10000";
-    test.push_back(command);
-    command = "F 1005691";
-    test.push_back(command);
-    command = "F 1003200";
-    test.push_back(command);
-
-    command = "I 1014748 Susan 01093223455 322 124 Fracture 10000";
-    test.push_back(command);
-
-    command = "A 100 Pneumonia 30000";
-    test.push_back(command);
-    command = "A 1011062 Pneumonia 30000";
-    test.push_back(command);
-    int i =0;
     while(true){
         queue<string> command_line;
         command = "";
-        if(i==test.size()) break;
         getline(cin, command);
-        command = test[i];
-        i++;
         Parser(command_line, command);
     
         string option = command_line.front(); command_line.pop();
-        cout << '\t' << option << endl;
         if(option == "I"){
-            cout << "comm_line.front():" << command_line.front() << endl;
             rbtree.insert(new Node(new Patient(command_line)));
         }
         else if(option=="F"){
@@ -357,19 +285,12 @@ int main(){
                 cout << "Not found" << endl;
         }
         else if (option == "E"){
-
+            string disease_name = command_line.front();
+            cout << rbtree.search_disease(disease_name) << endl;
         }
         else{
             cout << "Wrong option." << endl;
         }
-
-        // Patient* pat(command_line);
-        // Patient* pat = new Patient(command_line);
-        // rbtree.insert(new Node(pat));
-        // cout << i+1 << ' ' << "pat->prn(): ";
-        // pat->prn();
-        // cout << endl;
-        // i++;
     }
 
     return 0;
