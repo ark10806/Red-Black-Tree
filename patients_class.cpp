@@ -35,12 +35,8 @@ public:
         rec->charge = charge;
         Record_stk.push(rec);
     }
-    int get_num(){
-        return num;
-    }
-    stack<Record*>* get_Record(){
-        return &Record_stk;
-    }
+    int get_num(){ return num; }
+    stack<Record*>* get_Record(){ return &Record_stk; }
     void prn(){
         cout << name << ' ' << tel << ' ' << addr.x << ' ' << addr.y << endl;
     }
@@ -125,23 +121,16 @@ public:
         Node* prev = NULL;
         while(curr != NULL){
             prev = curr;
-            if(key < curr->key){
-                curr = curr->left;
-            }
-            else if(key > curr->key){
-                curr = curr->right;
-            }
-            else{
-                return curr;
-            }
+            if(key < curr->key){ curr = curr->left; }
+            else if(key > curr->key){ curr = curr->right; }
+            else{ return curr; }
         }
         return prev;
     }
     void preorder_traversal(Node* node, string disease_name, int& num_disease){
         if(node==NULL) return;
         preorder_traversal(node->left, disease_name, num_disease);
-        if(node->pat->get_Record()->top()->disease == disease_name)
-            num_disease++;
+        if(node->pat->get_Record()->top()->disease == disease_name) num_disease++;
         preorder_traversal(node->right, disease_name, num_disease);
         
     }
@@ -156,15 +145,9 @@ public:
         if(par==NULL) return;
         Node* uncle = node->get_uncle();
         if(par->color == RED){
-            if(uncle == NULL){
-                Restructure(node);
-            }
-            else if(uncle->color == BLK){
-                Restructure(node);
-            }
-            else{
-                Recolor(node, uncle);
-            }
+            if(uncle == NULL){ Restructure(node); }
+            else if(uncle->color == BLK){ Restructure(node); }
+            else{ Recolor(node, uncle); }
         }
     }
 
@@ -223,6 +206,8 @@ public:
         f1->left = T1;
         f1->right = T2;
         f1->color = RED;
+        if(T1 != NULL){ T1->parent = f1; }
+        if(T2 != NULL){ T2->parent = f1; }
 
         if(head == NULL)
             root = f2;
@@ -239,6 +224,8 @@ public:
         f3->left = T3;
         f3->right = T4;
         f3->color = RED;
+        if(T3 != NULL){ T3->parent = f3; }
+        if(T4 != NULL){ T4->parent = f3; }
     }
     void Recolor(Node* node, Node* uncle){
         node->parent->color = BLK;
@@ -253,8 +240,7 @@ public:
 
 int main(){
     RBtree rbtree;
-    // string command;
-    
+
     string option;
     int num;
     string name;
@@ -267,13 +253,10 @@ int main(){
     int loop;
     cin >> loop;
     for(int i=0; i<loop; i++){
-
         cin >> option;
         cin.ignore();
         if(option == "I"){
             cin >> num >> name >> tel >> x >> y >> disease_name >> charge;
-            // cout << num+1;
-            // cout << "\n\t\t\t: ";
             rbtree.insert(new Node(new Patient(num, name, tel, x, y, disease_name, charge)));
         }
         else if(option=="F"){
@@ -283,8 +266,7 @@ int main(){
                 cout << rbtree.get_depth(finded) << ' ';
                 finded->pat->prn();
             }
-            else
-                cout << "Not found" << endl;
+            else { cout << "Not found" << endl; }
             
         }
         else if (option == "A"){
@@ -294,16 +276,13 @@ int main(){
                 cout << rbtree.get_depth(finded) << endl;
                 finded->pat->append_record(disease_name, charge);
             }
-            else
-                cout << "Not found" << endl;
+            else{ cout << "Not found" << endl; }
         }
         else if (option == "E"){
             cin >> disease_name;
             cout << rbtree.search_disease(disease_name) << endl;
         }
-        else{
-            cout << "Wrong option." << endl;
-        }
+        else{ cout << "Wrong option." << endl; }
     }
 
     return 0;

@@ -92,6 +92,7 @@ public:
     void insert(Node* node){
         Node* new_node = node;
         Node* par = find_loc(node->key);
+        string logs;
         if(root == NULL){   // In the case of first-Insertion.
             root = node;
             root->color = BLK;
@@ -104,15 +105,17 @@ public:
                 par->right = node;
             }
             else{ // If the key already exists, then returns a Node which has the same key.
-                cout << get_depth(par) << ' ' << 0 << endl;
+                cout << get_depth(par) << ' ' << 0;
+                // cout << get_depth(par) << ' ' << 0 << endl;
                 return;
             }
-            cout << "par: " << par->key << endl;
-            cout << "me: " << node->key << endl;
+            // cout << "par: " << par->key << endl;
+            // cout << "me: " << node->key << endl;
             node->parent = par;
-            doubleRed(node);
+            logs = doubleRed(node);
         }
-        cout << get_depth(node) << ' ' << 1 << endl;
+        cout << get_depth(node) << ' ' << 1 << " " << logs;
+        // cout << get_depth(node) << ' ' << 1 << endl;
     }
     int get_depth(Node* node){
         int depth = 0;
@@ -153,24 +156,28 @@ public:
         return num_disease;
     }
     
-    void doubleRed(Node* node){
+    string doubleRed(Node* node){
         Node* par = node->parent;
-        if(par==NULL) return;
+        if(par==NULL) return "";
         Node* uncle = node->get_uncle();
         if(par->color == RED){
             if(uncle == NULL){
-                cout << "RES1" << endl;
+                // cout << "RES1" << endl;
                 Restructure(node);
+                return "RES1";
             }
             else if(uncle->color == BLK){
-                cout << "RES2" << endl;
+                // cout << "RES2" << endl;
                 Restructure(node);
+                return "RES2";
             }
             else{
-                cout << "REC" << endl;
+                // cout << "REC" << endl;
                 Recolor(node, uncle);
+                return "REC";
             }
         }
+        return "";
     }
 
     void Restructure(Node* node){
@@ -228,6 +235,9 @@ public:
         f1->left = T1;
         f1->right = T2;
         f1->color = RED;
+        if(T1 != NULL){ T1->parent = f1; }
+        if(T2 != NULL){ T2->parent = f1; }
+
 
         if(head == NULL)
             root = f2;
@@ -244,6 +254,9 @@ public:
         f3->left = T3;
         f3->right = T4;
         f3->color = RED;
+        if(T3 != NULL){ T3->parent = f3; }
+        //////////////////////////////////////
+        if(T4 != NULL){ T4->parent = f3; }
     }
     void Recolor(Node* node, Node* uncle){
         node->parent->color = BLK;
@@ -252,7 +265,7 @@ public:
         Node* grand = node->parent->parent;
         if(grand == root){ grand->color = BLK; }
         else{ grand->color = RED; }
-        doubleRed(uncle->parent);
+        doubleRed(grand);
     }
 };
 
@@ -284,40 +297,26 @@ int main(){
             iter = i+1;
         }
     }
-    cout << cnt << endl;
-    cout << "tot_comm.size() " << tot_comm.size() << endl;
-    cnt = 0;
-
-    queue<string> q;
-    iter = 0;
-    for (int i = 0; i < tot_comm.size(); i++){
-        string tmp = tot_comm.front(); tot_comm.pop();
-        cnt++;
-        cout << i+1 << "'" << tmp << "'" << endl;
-        iter = 0;
-        for (int j = 0; j < tmp.size(); j++){
-            if (tmp[j] == ' '){
-                // string kk = tmp.substr(iter, j-iter);
-                // cout << "''" << kk << "''" << endl;
-                q.push(tmp.substr(iter, j - iter));
-                iter = j + 1;
-            }
-        }
-        // string kk = tmp.substr(iter, tmp.size()-iter);
-        // cout << "^" << kk << "^" << endl;
-        q.push(tmp.substr(iter, tmp.size() - iter - 1));
-    }
-    cout << cnt << endl;
-
-    // int loop;
-    // cin >> loop;
     cnt = 0;
     while(true){
         string nth;
 
-        
+        queue<string> q;
+        iter = 0;
+        string tmp = tot_comm.front(); tot_comm.pop();
+        // cout << tmp << endl;
+        // cout << "cnt token: " << cnt << endl;
+        for(int k=0; k<tmp.size(); k++){
+            if(tmp[k]==' '){
+                q.push(tmp.substr(iter, k-iter));
+                iter = k+1;
+            }
+        }
+        q.push(tmp.substr(iter, tmp.size()-iter));
+
         // cin >> nth;
         getline(cin, nth);
+        // cout << "q.front(): ";
         // cout << q.front();
         option = q.front(); q.pop();
         num = stoi(q.front()); q.pop();
@@ -328,12 +327,13 @@ int main(){
         disease_name = q.front(); q.pop();
         charge = stoi(q.front()); q.pop();
         cnt++;
-        cout << cnt << "'" << option << ' ' << num << ' ' << name << ' ' << tel << ' ' << x << ' ' << y << ' ' << disease_name << ' ' << charge << "'" << endl;
+        // cout << cnt << "'" << option << ' ' << num << ' ' << name << ' ' << tel << ' ' << x << ' ' << y << ' ' << disease_name << ' ' << charge << "'" << endl;
 
         if(option == "I"){
             // cin >> num >> name >> tel >> x >> y >> disease_name >> charge;
             // cout << num+1;
             // cout << "\n\t\t\t: ";
+            cout << cnt << ' ';
             rbtree.insert(new Node(new Patient(num, name, tel, x, y, disease_name, charge)));
         }
         else if(option=="F"){
