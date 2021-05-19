@@ -114,7 +114,7 @@ public:
         cout << get_depth(new_node) << ' ' << 1 << endl;
     }
     int get_depth(Node* node){
-        // 인자로 건네받은 node기준으로 NULL이 발견될때까지 계속하여 parent를 구함으로써 해당 노드의 depth를 구하여 반환.
+        // node에서 root상의 경로로 이동하며 해당 노드의 depth를 구하여 반환.
         int depth = 0;
         while(node->parent != NULL){
             node = node->parent;
