@@ -123,8 +123,8 @@ public:
         return depth;
     }
     Node* find_loc(int key){
-        // 이진탐색하여 마지막으로 위치한 노드의 부모를 반환한다.
-        // 실패시 NULL을 반환하며, 실패하는 경우는 RB-tree에 첫 원소 즉, root를 삽입하는 경우이다.
+        // 이진탐색하여 입력된 key와 같은 key를 갖는 노드의 주소를 반환.
+        // 탐색 실패시 NULL을 반환한다.
         Node* curr = root;
         Node* prev = NULL;
         while(curr != NULL){
